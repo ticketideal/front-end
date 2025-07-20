@@ -8,13 +8,15 @@ import {
   TrendingUp,
   BarChart3,
   PieChart,
-  Calendar
+  Calendar,
+  Filter
 } from "lucide-react";
 
 import { StatCard } from "@/components/StatCard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   BarChart,
   Bar,
@@ -73,10 +75,18 @@ const COLORS = ['#8B5CF6', '#10B981', '#F59E0B', '#EF4444'];
 
 export function AdminDashboard({ selectedEvent, showFinancialValues, userRole }: AdminDashboardProps) {
   const [activeTab, setActiveTab] = useState("overview");
+  const [currentSelectedEvent, setCurrentSelectedEvent] = useState(selectedEvent);
 
-  const eventName = selectedEvent === "1" ? "Rock in Rio 2024" : 
-                   selectedEvent === "2" ? "Festival de Verão Salvador" :
-                   selectedEvent === "3" ? "Lollapalooza Brasil" : "Villa Mix Festival";
+  const eventName = currentSelectedEvent === "1" ? "Rock in Rio 2024" : 
+                   currentSelectedEvent === "2" ? "Festival de Verão Salvador" :
+                   currentSelectedEvent === "3" ? "Lollapalooza Brasil" : "Villa Mix Festival";
+
+  const eventos = [
+    { id: "1", nome: "Rock in Rio 2024" },
+    { id: "2", nome: "Festival de Verão Salvador" },
+    { id: "3", nome: "Lollapalooza Brasil" },
+    { id: "4", nome: "Villa Mix Festival" }
+  ];
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -91,6 +101,28 @@ export function AdminDashboard({ selectedEvent, showFinancialValues, userRole }:
 
   return (
     <div className="p-6 space-y-6">
+      {/* Event Filter - Above title */}
+      <div className="flex justify-start">
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-muted-foreground">Evento:</span>
+          <Select
+            value={currentSelectedEvent}
+            onValueChange={setCurrentSelectedEvent}
+          >
+            <SelectTrigger className="w-[200px] h-8 text-sm">
+              <SelectValue placeholder="Selecione um evento" />
+            </SelectTrigger>
+            <SelectContent>
+              {eventos.map((evento) => (
+                <SelectItem key={evento.id} value={evento.id}>
+                  {evento.nome}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
       {/* Event Header */}
       <div className="flex items-center justify-between">
         <div>

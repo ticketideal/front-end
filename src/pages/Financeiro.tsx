@@ -675,6 +675,44 @@ const Financeiro = () => {
         </div>
       </div>
 
+      {/* Filtros */}
+      <div className="flex items-center gap-4 bg-card/50 rounded-lg p-3 border border-border/50">
+        <span className="text-sm text-muted-foreground">Filtros:</span>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-muted-foreground">Evento:</span>
+            <Select value={eventoFiltro} onValueChange={setEventoFiltro}>
+              <SelectTrigger className="w-[180px] h-8 text-sm">
+                <SelectValue placeholder="Selecione um evento" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="todos">Todos os eventos</SelectItem>
+                {eventos.map((evento) => (
+                  <SelectItem key={evento.id} value={evento.id}>
+                    {evento.nome}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-muted-foreground">Status:</span>
+            <Select value={tipoFiltro} onValueChange={setTipoFiltro}>
+              <SelectTrigger className="w-[150px] h-8 text-sm">
+                <SelectValue placeholder="Selecione o status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="todos">Todos</SelectItem>
+                <SelectItem value="abertas">Abertas</SelectItem>
+                <SelectItem value="privado">Privadas</SelectItem>
+                <SelectItem value="arquivado">Arquivadas</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+      </div>
+
       {/* Cards de Resumo */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <Card>

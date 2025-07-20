@@ -87,7 +87,7 @@ export function AdminHeader({
 
   return (
     <header className="fixed top-0 left-0 right-0 h-16 bg-card border-b border-border shadow-soft flex items-center justify-between px-3 md:px-6 relative z-50">
-      {/* Left side - Logo, Menu trigger and Event selector */}
+      {/* Left side - Logo and Menu trigger */}
       <div className="flex items-center gap-2 md:gap-4 min-w-0 flex-1">
         {/* Logo */}
         <div className="flex items-center gap-2 flex-shrink-0">
@@ -96,35 +96,6 @@ export function AdminHeader({
             alt="Ticket Ideal" 
             className="h-6 md:h-8 w-auto object-contain"
           />
-        </div>
-        
-        <div className="w-px h-6 md:h-8 bg-border flex-shrink-0"></div>
-        
-        
-        
-        <div className="flex items-center gap-1 md:gap-2 min-w-0 flex-1">
-          <span className="text-xs md:text-sm font-medium text-foreground flex-shrink-0 hidden sm:block">Evento:</span>
-          <Select value={selectedEvent} onValueChange={onEventChange}>
-            <SelectTrigger className="w-full max-w-[200px] md:max-w-[280px] bg-background border-input text-xs md:text-sm">
-              <SelectValue placeholder="Selecione um evento" />
-            </SelectTrigger>
-            <SelectContent className="bg-popover border-border z-[100]">
-              {getAvailableEvents().map((event) => (
-                <SelectItem key={event.id} value={event.id}>
-                  <div className="flex items-center justify-between w-full">
-                    <span className="text-sm">{event.name}</span>
-                    <span className={`ml-2 px-2 py-1 rounded-full text-xs ${
-                      event.status === "open" 
-                        ? "bg-success/20 text-success" 
-                        : "bg-warning/20 text-warning"
-                    }`}>
-                      {event.status === "open" ? "Aberto" : "Privado"}
-                    </span>
-                  </div>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
         </div>
       </div>
 
