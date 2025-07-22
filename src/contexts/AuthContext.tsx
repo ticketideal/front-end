@@ -1,5 +1,6 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
+import { AuthService } from "@/services/AuthService";
 import { jwtDecode } from "jwt-decode";
+import React, { createContext, useContext, useEffect, useState } from "react";
 
 interface User {
   id: string;
@@ -65,17 +66,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const signIn = async (email: string, password: string) => {
     try {
-      const res = await fetch("/api/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
-      const data = await res.json();
-      if (res.ok && data.token) {
-        saveToken(data.token);
+      const result = await AuthService.login({ email, password });
+      localStorage.setItem("token", result.token); // ou result.accessToken
+      if (result.ok && result.token) {
+        saveToken(result.token);
         return {};
       } else {
-        return { error: data.message || "Erro no login" };
+        return { error: result.message || "Erro no login" };
       }
     } catch (e) {
       return { error: "Erro de rede" };
