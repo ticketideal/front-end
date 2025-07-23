@@ -1,8 +1,8 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { 
-  Users, 
-  Search, 
+import {
+  Users,
+  Search,
   Edit,
   Phone,
   Mail,
@@ -16,22 +16,26 @@ import {
   FileSpreadsheet,
   FileImage,
   ChevronDown,
-  Loader2
+  Loader2,
 } from "lucide-react";
-import { useCustomers, useUpdateCustomer, useExportCustomers } from "@/hooks/useCustomers";
+import {
+  useCustomers,
+  useUpdateCustomer,
+  useExportCustomers,
+} from "@/hooks/useCustomers";
 import { Customer } from "@/services/customerService";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "@/components/ui/table";
 import {
   Dialog,
@@ -66,7 +70,7 @@ export default function Customers() {
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
   const [exportDialogOpen, setExportDialogOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(10);
+  const [itemsPerPage] = useState(30);
   const [selectedColumns, setSelectedColumns] = useState({
     nome: true,
     email: true,
@@ -74,18 +78,25 @@ export default function Customers() {
     telefone: true,
     ingressos: true,
     vendas: true,
-    produtores: true
+    produtores: true,
   });
 
   // Parâmetros para a consulta da API
-  const queryParams = useMemo(() => ({
-    page: currentPage,
-    limit: itemsPerPage,
-    search: searchTerm || undefined,
-  }), [currentPage, itemsPerPage, searchTerm]);
+  const queryParams = useMemo(
+    () => ({
+      page: currentPage,
+      limit: itemsPerPage,
+      search: searchTerm || undefined,
+    }),
+    [currentPage, itemsPerPage, searchTerm]
+  );
 
   // Hooks para API
-  const { data: customersResponse, isLoading, error } = useCustomers(queryParams);
+  const {
+    data: customersResponse,
+    isLoading,
+    error,
+  } = useCustomers(queryParams);
   const updateCustomer = useUpdateCustomer();
   const exportCustomers = useExportCustomers();
 
@@ -96,28 +107,32 @@ export default function Customers() {
   };
 
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL'
+    return new Intl.NumberFormat("pt-BR", {
+      style: "currency",
+      currency: "BRL",
     }).format(value);
   };
 
   const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString('pt-BR');
+    return new Date(dateStr).toLocaleDateString("pt-BR");
   };
 
   const getStatusBadge = (status: string) => {
     const variants = {
-      "Pago": "default",
-      "Pendente": "secondary",
-      "Cancelado": "destructive"
+      Pago: "default",
+      Pendente: "secondary",
+      Cancelado: "destructive",
     } as const;
-    
-    return <Badge variant={variants[status as keyof typeof variants] || "default"}>{status}</Badge>;
+
+    return (
+      <Badge variant={variants[status as keyof typeof variants] || "default"}>
+        {status}
+      </Badge>
+    );
   };
 
   const handleEdit = (customer: Customer) => {
-    setEditingCustomer({...customer});
+    setEditingCustomer({ ...customer });
   };
 
   const handleSaveEdit = () => {
@@ -127,42 +142,54 @@ export default function Customers() {
         {
           onSuccess: () => {
             setEditingCustomer(null);
-          }
+          },
         }
       );
     }
   };
 
-  const handleExport = (format: 'excel' | 'pdf') => {
+  const formatPhone = (phone: string): string => {
+    const digits = phone.replace(/\D/g, "");
+    const local = digits.startsWith("55") ? digits.slice(2) : digits;
+    if (local.length === 11) {
+      return `(${local.slice(0, 2)}) ${local.slice(2, 7)}-${local.slice(7)}`;
+    }
+    if (local.length === 10) {
+      return `(${local.slice(0, 2)}) ${local.slice(2, 6)}-${local.slice(6)}`;
+    }
+    return phone;
+  };
+
+  const handleExport = (format: "excel" | "pdf") => {
     const filters = {
       search: searchTerm || undefined,
     };
-    
+
     exportCustomers.mutate(
       { filters, format },
       {
         onSuccess: () => {
           setExportDialogOpen(false);
-        }
+        },
       }
     );
   };
 
   const toggleColumn = (column: string) => {
-    setSelectedColumns(prev => ({
+    setSelectedColumns((prev) => ({
       ...prev,
-      [column]: !prev[column as keyof typeof prev]
+      [column]: !prev[column as keyof typeof prev],
     }));
   };
 
   const columnLabels = {
     nome: "Nome",
-    email: "Email", 
+    email: "Email",
     cpf: "CPF",
     telefone: "Telefone",
     ingressos: "Ingressos",
     vendas: "Vendas",
-    produtores: "Produtores"
+    produtores: "Produtores",
   };
 
   // Loading state
@@ -185,8 +212,12 @@ export default function Customers() {
       <div className="p-6 space-y-6">
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center">
-            <div className="text-red-500 text-lg font-semibold mb-2">Erro ao carregar clientes</div>
-            <p className="text-muted-foreground">Verifique sua conexão e tente novamente.</p>
+            <div className="text-red-500 text-lg font-semibold mb-2">
+              Erro ao carregar clientes
+            </div>
+            <p className="text-muted-foreground">
+              Verifique sua conexão e tente novamente.
+            </p>
           </div>
         </div>
       </div>
@@ -195,7 +226,9 @@ export default function Customers() {
 
   const customers = customersResponse?.data || [];
   const totalCustomers = customersResponse?.total || 0;
-  const totalPages = customersResponse?.totalPages || 1;
+  const totalPages = Math.ceil(
+    Number(customersResponse?.total || 0) / itemsPerPage
+  );
 
   return (
     <div className="p-6 space-y-6">
@@ -206,12 +239,18 @@ export default function Customers() {
             <Users className="h-8 w-8" />
             Gestão de Clientes
           </h1>
-          <p className="text-muted-foreground">Informações dos compradores de ingressos</p>
+          <p className="text-muted-foreground">
+            Informações dos compradores de ingressos
+          </p>
         </div>
         <div className="flex items-center gap-2">
           <Dialog open={exportDialogOpen} onOpenChange={setExportDialogOpen}>
             <DialogTrigger asChild>
-              <Button variant="outline" size="sm" disabled={exportCustomers.isPending}>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={exportCustomers.isPending}
+              >
                 <Download className="h-4 w-4 mr-2" />
                 {exportCustomers.isPending ? "Exportando..." : "Exportar"}
               </Button>
@@ -225,16 +264,16 @@ export default function Customers() {
               </DialogHeader>
               <div className="space-y-4">
                 <div className="flex gap-2">
-                  <Button 
-                    onClick={() => handleExport('excel')}
+                  <Button
+                    onClick={() => handleExport("excel")}
                     className="flex-1"
                     disabled={exportCustomers.isPending}
                   >
                     <FileSpreadsheet className="h-4 w-4 mr-2" />
                     Excel
                   </Button>
-                  <Button 
-                    onClick={() => handleExport('pdf')}
+                  <Button
+                    onClick={() => handleExport("pdf")}
                     variant="outline"
                     className="flex-1"
                     disabled={exportCustomers.isPending}
@@ -264,12 +303,16 @@ export default function Customers() {
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="p-4">
             <div className="text-center">
-              <div className="text-2xl font-bold text-foreground">{totalCustomers}</div>
-              <div className="text-sm text-muted-foreground">Clientes encontrados</div>
+              <div className="text-2xl font-bold text-foreground">
+                {totalCustomers}
+              </div>
+              <div className="text-sm text-muted-foreground">
+                Clientes encontrados
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -281,27 +324,33 @@ export default function Customers() {
           <CardContent className="p-4 text-center">
             <Users className="h-8 w-8 mx-auto mb-2 text-primary" />
             <div className="text-2xl font-bold">{totalCustomers}</div>
-            <div className="text-sm text-muted-foreground">Total de Clientes</div>
+            <div className="text-sm text-muted-foreground">
+              Total de Clientes
+            </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="p-4 text-center">
             <CreditCard className="h-8 w-8 mx-auto mb-2 text-success" />
             <div className="text-2xl font-bold">
-              {formatCurrency(customers.reduce((sum, c) => sum + c.valorTotal, 0))}
+              {formatCurrency(
+                customers.reduce((sum, c) => sum + c.valorTotal, 0)
+              )}
             </div>
             <div className="text-sm text-muted-foreground">Receita Total</div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="p-4 text-center">
             <FileText className="h-8 w-8 mx-auto mb-2 text-blue-500" />
             <div className="text-2xl font-bold">
               {customers.reduce((sum, c) => sum + c.ingressos, 0)}
             </div>
-            <div className="text-sm text-muted-foreground">Ingressos Vendidos</div>
+            <div className="text-sm text-muted-foreground">
+              Ingressos Vendidos
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -319,7 +368,9 @@ export default function Customers() {
             <div className="text-center py-8">
               <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
               <p className="text-muted-foreground">
-                {searchTerm ? "Nenhum cliente encontrado para esta busca" : "Nenhum cliente cadastrado"}
+                {searchTerm
+                  ? "Nenhum cliente encontrado para esta busca"
+                  : "Nenhum cliente cadastrado"}
               </p>
             </div>
           ) : (
@@ -347,7 +398,7 @@ export default function Customers() {
                           <div className="space-y-1">
                             <div className="flex items-center gap-2">
                               <Mail className="h-4 w-4 text-blue-500" />
-                              <a 
+                              <a
                                 href={`mailto:${customer.email}`}
                                 className="text-sm text-blue-500 hover:underline"
                               >
@@ -356,28 +407,38 @@ export default function Customers() {
                             </div>
                             <div className="flex items-center gap-2">
                               <MessageCircle className="h-4 w-4 text-green-500" />
-                              <a 
-                                href={`https://wa.me/${customer.telefone.replace(/\D/g, '')}`}
+                              <a
+                                href={`https://wa.me/${customer.telefone.replace(
+                                  /\D/g,
+                                  ""
+                                )}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="text-sm text-green-500 hover:underline"
                               >
-                                {customer.telefone}
+                                {formatPhone(customer.telefone)}
                               </a>
                             </div>
                           </div>
                         </TableCell>
                         <TableCell>
-                          <span className="font-mono text-sm">{customer.cpf}</span>
+                          <span className="font-mono text-sm">
+                            {customer.cpf}
+                          </span>
                         </TableCell>
                         <TableCell className="text-center">
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => navigate(`/clientes/${customer.id}/ingressos`)}
+                            onClick={() =>
+                              navigate(`/clientes/${customer.id}/ingressos`)
+                            }
                             className="h-8 px-2"
                           >
-                            <Badge variant="outline" className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors">
+                            <Badge
+                              variant="outline"
+                              className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors"
+                            >
                               {customer.ingressos}
                             </Badge>
                           </Button>
@@ -386,12 +447,17 @@ export default function Customers() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => navigate(`/clientes/${customer.id}/vendas`)}
+                            onClick={() =>
+                              navigate(`/clientes/${customer.id}/vendas`)
+                            }
                             className="h-8 px-2"
                           >
                             <div className="flex items-center gap-1 cursor-pointer hover:text-primary transition-colors">
                               <TrendingUp className="h-4 w-4" />
-                              <Badge variant="secondary" className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors">
+                              <Badge
+                                variant="secondary"
+                                className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors"
+                              >
                                 {customer.totalVendas}
                               </Badge>
                             </div>
@@ -399,12 +465,17 @@ export default function Customers() {
                         </TableCell>
                         <TableCell>
                           <div className="space-y-1">
-                            {customer.produtores.slice(0, 2).map((produtor, index) => (
-                              <div key={index} className="flex items-center gap-1">
-                                <Building2 className="h-3 w-3 text-primary" />
-                                <span className="text-xs">{produtor}</span>
-                              </div>
-                            ))}
+                            {customer.produtores
+                              .slice(0, 2)
+                              .map((produtor, index) => (
+                                <div
+                                  key={index}
+                                  className="flex items-center gap-1"
+                                >
+                                  <Building2 className="h-3 w-3 text-primary" />
+                                  <span className="text-xs">{produtor}</span>
+                                </div>
+                              ))}
                             {customer.produtores.length > 2 && (
                               <div className="flex items-center gap-1">
                                 <Building2 className="h-3 w-3 text-muted-foreground" />
@@ -441,7 +512,12 @@ export default function Customers() {
                                       <Input
                                         id="nome"
                                         value={editingCustomer.nome}
-                                        onChange={(e) => setEditingCustomer({...editingCustomer, nome: e.target.value})}
+                                        onChange={(e) =>
+                                          setEditingCustomer({
+                                            ...editingCustomer,
+                                            nome: e.target.value,
+                                          })
+                                        }
                                       />
                                     </div>
                                     <div>
@@ -450,7 +526,12 @@ export default function Customers() {
                                         id="email"
                                         type="email"
                                         value={editingCustomer.email}
-                                        onChange={(e) => setEditingCustomer({...editingCustomer, email: e.target.value})}
+                                        onChange={(e) =>
+                                          setEditingCustomer({
+                                            ...editingCustomer,
+                                            email: e.target.value,
+                                          })
+                                        }
                                       />
                                     </div>
                                     <div>
@@ -458,7 +539,12 @@ export default function Customers() {
                                       <Input
                                         id="telefone"
                                         value={editingCustomer.telefone}
-                                        onChange={(e) => setEditingCustomer({...editingCustomer, telefone: e.target.value})}
+                                        onChange={(e) =>
+                                          setEditingCustomer({
+                                            ...editingCustomer,
+                                            telefone: e.target.value,
+                                          })
+                                        }
                                       />
                                     </div>
                                     <div>
@@ -466,18 +552,28 @@ export default function Customers() {
                                       <Input
                                         id="cpf"
                                         value={editingCustomer.cpf}
-                                        onChange={(e) => setEditingCustomer({...editingCustomer, cpf: e.target.value})}
+                                        onChange={(e) =>
+                                          setEditingCustomer({
+                                            ...editingCustomer,
+                                            cpf: e.target.value,
+                                          })
+                                        }
                                       />
                                     </div>
                                     <div className="flex justify-end gap-2 pt-4">
-                                      <Button variant="outline" onClick={() => setEditingCustomer(null)}>
+                                      <Button
+                                        variant="outline"
+                                        onClick={() => setEditingCustomer(null)}
+                                      >
                                         Cancelar
                                       </Button>
-                                      <Button 
+                                      <Button
                                         onClick={handleSaveEdit}
                                         disabled={updateCustomer.isPending}
                                       >
-                                        {updateCustomer.isPending ? "Salvando..." : "Salvar"}
+                                        {updateCustomer.isPending
+                                          ? "Salvando..."
+                                          : "Salvar"}
                                       </Button>
                                     </div>
                                   </div>
@@ -496,75 +592,95 @@ export default function Customers() {
               {totalPages > 1 && (
                 <div className="flex items-center justify-between pt-4">
                   <div className="text-sm text-muted-foreground">
-                    Página {currentPage} de {totalPages} ({totalCustomers} clientes total)
+                    Página {currentPage} de {totalPages} ({totalCustomers}{" "}
+                    clientes total)
                   </div>
                   <Pagination>
                     <PaginationContent>
                       <PaginationItem>
-                        <PaginationPrevious 
+                        <PaginationPrevious
                           href="#"
                           onClick={(e) => {
                             e.preventDefault();
-                            if (currentPage > 1) setCurrentPage(currentPage - 1);
+                            if (currentPage > 1)
+                              setCurrentPage(currentPage - 1);
                           }}
-                          className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
+                          className={
+                            currentPage === 1
+                              ? "pointer-events-none opacity-50"
+                              : ""
+                          }
                         />
                       </PaginationItem>
-                      
-                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
-                        if (totalPages <= 7) {
-                          return (
-                            <PaginationItem key={page}>
-                              <PaginationLink
-                                href="#"
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                  setCurrentPage(page);
-                                }}
-                                isActive={currentPage === page}
-                              >
-                                {page}
-                              </PaginationLink>
-                            </PaginationItem>
-                          );
-                        }
 
-                        if (page === 1 || page === totalPages || (page >= currentPage - 1 && page <= currentPage + 1)) {
-                          return (
-                            <PaginationItem key={page}>
-                              <PaginationLink
-                                href="#"
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                  setCurrentPage(page);
-                                }}
-                                isActive={currentPage === page}
-                              >
-                                {page}
-                              </PaginationLink>
-                            </PaginationItem>
-                          );
-                        }
+                      {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                        (page) => {
+                          if (totalPages <= 7) {
+                            return (
+                              <PaginationItem key={page}>
+                                <PaginationLink
+                                  href="#"
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    setCurrentPage(page);
+                                  }}
+                                  isActive={currentPage === page}
+                                >
+                                  {page}
+                                </PaginationLink>
+                              </PaginationItem>
+                            );
+                          }
 
-                        if (page === currentPage - 2 || page === currentPage + 2) {
-                          return (
-                            <PaginationItem key={page}>
-                              <PaginationEllipsis />
-                            </PaginationItem>
-                          );
-                        }
+                          if (
+                            page === 1 ||
+                            page === totalPages ||
+                            (page >= currentPage - 1 && page <= currentPage + 1)
+                          ) {
+                            return (
+                              <PaginationItem key={page}>
+                                <PaginationLink
+                                  href="#"
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    setCurrentPage(page);
+                                  }}
+                                  isActive={currentPage === page}
+                                >
+                                  {page}
+                                </PaginationLink>
+                              </PaginationItem>
+                            );
+                          }
 
-                        return null;
-                      })}
-                      
+                          if (
+                            page === currentPage - 2 ||
+                            page === currentPage + 2
+                          ) {
+                            return (
+                              <PaginationItem key={page}>
+                                <PaginationEllipsis />
+                              </PaginationItem>
+                            );
+                          }
+
+                          return null;
+                        }
+                      )}
+
                       <PaginationItem>
-                        <PaginationNext 
+                        <PaginationNext
                           href="#"
                           onClick={(e) => {
                             e.preventDefault();
-                            if (currentPage < totalPages) setCurrentPage(currentPage + 1);
+                            if (currentPage < totalPages)
+                              setCurrentPage(currentPage + 1);
                           }}
-                          className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
+                          className={
+                            currentPage === totalPages
+                              ? "pointer-events-none opacity-50"
+                              : ""
+                          }
                         />
                       </PaginationItem>
                     </PaginationContent>

@@ -90,7 +90,7 @@ function LayoutContent({
       
       <div className="flex flex-1">
         <div className={`hidden md:block flex-shrink-0 transition-all duration-300 ${collapsed ? "w-16" : "w-64"}`}></div>
-        <main className="flex-1 overflow-auto pt-16">
+        <main className="flex-1 h-[calc(100vh-4rem)] overflow-auto">
           {typeof children === 'function' ? children({ 
             selectedEvent, 
             showFinancialValues, 

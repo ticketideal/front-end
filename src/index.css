@@ -148,6 +148,7 @@
   body {
     @apply bg-background text-foreground;
     background-color: hsl(0, 0%, 100%) !important; /* Força branco puro */
+    overflow: hidden; /* Remove scroll do body */
   }
 }
 
