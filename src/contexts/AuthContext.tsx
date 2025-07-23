@@ -67,9 +67,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const signIn = async (email: string, password: string) => {
     try {
       const result = await AuthService.login({ email, password });
-      localStorage.setItem("token", result.token); // ou result.accessToken
-      if (result.ok && result.token) {
-        saveToken(result.token);
+      localStorage.setItem("token", result.token);
+      console.log(result);
+      if (result.access_token) {
+        saveToken(result.access_token);
         return {};
       } else {
         return { error: result.message || "Erro no login" };

@@ -54,14 +54,14 @@ const Login = () => {
   const formReset = useForm<ResetPasswordFormData>({
     resolver: zodResolver(resetPasswordSchema),
   });
-  
+
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError("");
-    
+
     const { error } = await resetPassword(resetEmail);
-    
+
     if (error) {
       setError("Erro ao enviar email de recuperação");
     } else {
@@ -72,16 +72,16 @@ const Login = () => {
       setShowResetForm(false);
       setResetEmail("");
     }
-    
+
     setLoading(false);
   };
-  
+
   const onSubmitLogin = async (data: LoginFormData) => {
     setLoading(true);
     setError("");
-    
+
     const { error } = await signIn(data.email, data.password);
-    
+
     if (error) {
       if (error.message.includes("Invalid login credentials")) {
         setError("Email ou senha incorretos");
