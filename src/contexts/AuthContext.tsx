@@ -1,4 +1,4 @@
-import { AuthService } from "@/services/AuthService";
+import { AuthService } from "@/services/authService";
 import { jwtDecode } from "jwt-decode";
 import React, { createContext, useContext, useEffect, useState } from "react";
 
