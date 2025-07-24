@@ -14,6 +14,7 @@ interface StatCardProps {
   isFinancial?: boolean;
   showValue?: boolean;
   className?: string;
+  additionalInfo?: ReactNode;
 }
 
 export function StatCard({
@@ -24,7 +25,8 @@ export function StatCard({
   description,
   isFinancial = false,
   showValue = true,
-  className = ""
+  className = "",
+  additionalInfo
 }: StatCardProps) {
   const displayValue = showValue ? value : "••••";
 
@@ -57,6 +59,8 @@ export function StatCard({
             {description}
           </p>
         )}
+        
+        {additionalInfo && additionalInfo}
       </CardContent>
     </Card>
   );

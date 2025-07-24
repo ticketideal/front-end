@@ -1,42 +1,30 @@
-import { useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
-import {
-  Users,
-  Search,
-  Edit,
-  Phone,
-  Mail,
-  CreditCard,
-  Calendar,
-  FileText,
-  Download,
-  MessageCircle,
-  TrendingUp,
-  Building2,
-  FileSpreadsheet,
-  FileImage,
-  ChevronDown,
-  Loader2,
-} from "lucide-react";
 import {
   useCustomers,
-  useUpdateCustomer,
   useExportCustomers,
+  useUpdateCustomer,
 } from "@/hooks/useCustomers";
 import { Customer } from "@/services/customerService";
-
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+  Building2,
+  CreditCard,
+  Download,
+  Edit,
+  FileImage,
+  FileSpreadsheet,
+  FileText,
+  Loader2,
+  Mail,
+  MessageCircle,
+  Search,
+  TrendingUp,
+  Users,
+} from "lucide-react";
+import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
+
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -45,15 +33,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Checkbox } from "@/components/ui/checkbox";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import {
   Pagination,
   PaginationContent,
@@ -63,6 +44,14 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 export default function Customers() {
   const navigate = useNavigate();
@@ -71,15 +60,6 @@ export default function Customers() {
   const [exportDialogOpen, setExportDialogOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(30);
-  const [selectedColumns, setSelectedColumns] = useState({
-    nome: true,
-    email: true,
-    cpf: true,
-    telefone: true,
-    ingressos: true,
-    vendas: true,
-    produtores: true,
-  });
 
   // Parâmetros para a consulta da API
   const queryParams = useMemo(
@@ -104,31 +84,6 @@ export default function Customers() {
   const handleSearch = (value: string) => {
     setSearchTerm(value);
     setCurrentPage(1);
-  };
-
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat("pt-BR", {
-      style: "currency",
-      currency: "BRL",
-    }).format(value);
-  };
-
-  const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString("pt-BR");
-  };
-
-  const getStatusBadge = (status: string) => {
-    const variants = {
-      Pago: "default",
-      Pendente: "secondary",
-      Cancelado: "destructive",
-    } as const;
-
-    return (
-      <Badge variant={variants[status as keyof typeof variants] || "default"}>
-        {status}
-      </Badge>
-    );
   };
 
   const handleEdit = (customer: Customer) => {
@@ -173,23 +128,6 @@ export default function Customers() {
         },
       }
     );
-  };
-
-  const toggleColumn = (column: string) => {
-    setSelectedColumns((prev) => ({
-      ...prev,
-      [column]: !prev[column as keyof typeof prev],
-    }));
-  };
-
-  const columnLabels = {
-    nome: "Nome",
-    email: "Email",
-    cpf: "CPF",
-    telefone: "Telefone",
-    ingressos: "Ingressos",
-    vendas: "Vendas",
-    produtores: "Produtores",
   };
 
   // Loading state
@@ -313,43 +251,6 @@ export default function Customers() {
               <div className="text-sm text-muted-foreground">
                 Clientes encontrados
               </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
-          <CardContent className="p-4 text-center">
-            <Users className="h-8 w-8 mx-auto mb-2 text-primary" />
-            <div className="text-2xl font-bold">{totalCustomers}</div>
-            <div className="text-sm text-muted-foreground">
-              Total de Clientes
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4 text-center">
-            <CreditCard className="h-8 w-8 mx-auto mb-2 text-success" />
-            <div className="text-2xl font-bold">
-              {formatCurrency(
-                customers.reduce((sum, c) => sum + c.valorTotal, 0)
-              )}
-            </div>
-            <div className="text-sm text-muted-foreground">Receita Total</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4 text-center">
-            <FileText className="h-8 w-8 mx-auto mb-2 text-blue-500" />
-            <div className="text-2xl font-bold">
-              {customers.reduce((sum, c) => sum + c.ingressos, 0)}
-            </div>
-            <div className="text-sm text-muted-foreground">
-              Ingressos Vendidos
             </div>
           </CardContent>
         </Card>

@@ -190,6 +190,16 @@ export function AdminDashboard({ selectedEvent, showFinancialValues, userRole }:
           description="60% do total"
           isFinancial
           showValue={showFinancialValues}
+          additionalInfo={
+            <div className="space-y-1 mt-1">
+              <div className="text-xs text-success font-medium">
+                Disponível: {formatCurrency(189250)}
+              </div>
+              <div className="text-xs text-yellow-600 font-medium">
+                Aguardando: {formatCurrency(84823)}
+              </div>
+            </div>
+          }
         />
         <StatCard
           title="Vendas PIX"
@@ -211,10 +221,9 @@ export function AdminDashboard({ selectedEvent, showFinancialValues, userRole }:
 
       {/* Charts Section */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="overview">Visão Geral</TabsTrigger>
           <TabsTrigger value="tickets">Ingressos</TabsTrigger>
-          <TabsTrigger value="sales">Vendas</TabsTrigger>
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
         </TabsList>
 
@@ -235,9 +244,9 @@ export function AdminDashboard({ selectedEvent, showFinancialValues, userRole }:
                     <XAxis dataKey="session" />
                     <YAxis />
                     <Tooltip />
-                    <Bar dataKey="disponivel" name="Disponível" fill="#E5E7EB" />
-                    <Bar dataKey="vendido" name="Vendido" fill="#8B5CF6" />
-                    <Bar dataKey="validado" name="Validado" fill="#10B981" />
+                    <Bar dataKey="disponivel" name="Disponível" fill="#10B981" />
+                    <Bar dataKey="vendido" name="Vendido" fill="#EF4444" />
+                    <Bar dataKey="validado" name="Validado" fill="#3B82F6" />
                   </BarChart>
                 </ResponsiveContainer>
               </CardContent>
@@ -283,30 +292,30 @@ export function AdminDashboard({ selectedEvent, showFinancialValues, userRole }:
             <Card className="bg-gradient-card border-border shadow-soft">
               <CardHeader>
                 <CardTitle className="text-card-foreground flex items-center gap-2">
-                  <PieChart className="h-5 w-5" />
+                  <BarChart3 className="h-5 w-5" />
                   Tipos de Ingressos
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <RechartsePieChart>
-                    <Pie
-                      data={ticketTypeData}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                      outerRadius={80}
-                      fill="#8884d8"
-                      dataKey="value"
-                    >
-                      {ticketTypeData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                  </RechartsePieChart>
-                </ResponsiveContainer>
+                <div className="space-y-4">
+                  {ticketTypeData.map((item, index) => (
+                    <div key={item.name} className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm font-medium text-foreground">{item.name}</span>
+                        <span className="text-sm font-bold text-foreground">{item.value}%</span>
+                      </div>
+                      <div className="w-full bg-muted rounded-full h-3 relative overflow-hidden">
+                        <div 
+                          className="h-full rounded-full transition-all duration-300 ease-out"
+                          style={{ 
+                            width: `${item.value}%`,
+                            background: `linear-gradient(90deg, ${item.color}88, ${item.color})`
+                          }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </CardContent>
             </Card>
 
@@ -314,58 +323,119 @@ export function AdminDashboard({ selectedEvent, showFinancialValues, userRole }:
             <Card className="bg-gradient-card border-border shadow-soft">
               <CardHeader>
                 <CardTitle className="text-card-foreground flex items-center gap-2">
-                  <CreditCard className="h-5 w-5" />
+                  <BarChart3 className="h-5 w-5" />
                   Formas de Pagamento
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <RechartsePieChart>
-                    <Pie
-                      data={paymentMethodData}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                      outerRadius={80}
-                      fill="#8884d8"
-                      dataKey="value"
-                    >
-                      {paymentMethodData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                  </RechartsePieChart>
-                </ResponsiveContainer>
+                <div className="space-y-4">
+                  {paymentMethodData.map((item, index) => (
+                    <div key={item.name} className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm font-medium text-foreground">{item.name}</span>
+                        <span className="text-sm font-bold text-foreground">{item.value}%</span>
+                      </div>
+                      <div className="w-full bg-muted rounded-full h-3 relative overflow-hidden">
+                        <div 
+                          className="h-full rounded-full transition-all duration-300 ease-out"
+                          style={{ 
+                            width: `${item.value}%`,
+                            background: `linear-gradient(90deg, ${item.color}88, ${item.color})`
+                          }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </CardContent>
             </Card>
           </div>
         </TabsContent>
 
-        <TabsContent value="sales" className="space-y-4">
-          <Card className="bg-gradient-card border-border shadow-soft">
-            <CardHeader>
-              <CardTitle className="text-card-foreground">Relatório de Vendas</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-center text-muted-foreground py-8">
-                <BarChart3 className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>Relatórios detalhados de vendas em desenvolvimento</p>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
 
         <TabsContent value="analytics" className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Participação */}
+            <Card className="bg-gradient-card border-border shadow-soft">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  Média - Participação
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-card-foreground">
+                  81,96%
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Taxa de participação média
+                </p>
+              </CardContent>
+            </Card>
+
+            {/* Taxa Bancária por Ingresso */}
+            <Card className="bg-gradient-card border-border shadow-soft">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  Média - Taxa Bancária/Ingresso
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-card-foreground">
+                  {formatCurrency(0.72)}
+                </div>
+                <div className="flex items-center mt-1">
+                  <span className="text-xs text-muted-foreground">1,57%</span>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Valor por Ingresso */}
+            <Card className="bg-gradient-card border-border shadow-soft">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  Média - Valor/Ingresso
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-card-foreground">
+                  {formatCurrency(40.91)}
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Valor médio por ingresso
+                </p>
+              </CardContent>
+            </Card>
+
+            {/* Taxa Ticket Ideal por Ingresso */}
+            <Card className="bg-gradient-card border-border shadow-soft">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  Média - Valor Taxa Ticket Ideal/Ingresso
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-card-foreground">
+                  {formatCurrency(4.82)}
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Taxa média da plataforma
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Gráfico adicional para Analytics */}
           <Card className="bg-gradient-card border-border shadow-soft">
             <CardHeader>
-              <CardTitle className="text-card-foreground">Analytics Avançados</CardTitle>
+              <CardTitle className="text-card-foreground flex items-center gap-2">
+                <PieChart className="h-5 w-5" />
+                Análise de Performance
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-center text-muted-foreground py-8">
                 <PieChart className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>Análises avançadas e métricas em desenvolvimento</p>
+                <p>Gráficos de performance detalhados em desenvolvimento</p>
               </div>
             </CardContent>
           </Card>
