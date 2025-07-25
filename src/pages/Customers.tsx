@@ -57,6 +57,7 @@ export default function Customers() {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
+  const [openEditingCustomer, setOpenEditingCustomer] = useState(false);
   const [exportDialogOpen, setExportDialogOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(30);
@@ -88,6 +89,7 @@ export default function Customers() {
 
   const handleEdit = (customer: Customer) => {
     setEditingCustomer({ ...customer });
+    setOpenEditingCustomer(true);
   };
 
   const handleSaveEdit = () => {
@@ -97,6 +99,7 @@ export default function Customers() {
         {
           onSuccess: () => {
             setEditingCustomer(null);
+            setOpenEditingCustomer(false);
           },
         }
       );
@@ -353,43 +356,37 @@ export default function Customers() {
                             }
                             className="h-8 px-2"
                           >
-                            <div className="flex items-center gap-1 cursor-pointer hover:text-primary transition-colors">
-                              <TrendingUp className="h-4 w-4" />
-                              <Badge
-                                variant="secondary"
-                                className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors"
-                              >
-                                {customer.totalVendas}
-                              </Badge>
-                            </div>
+                            <Badge
+                              variant="outline"
+                              className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors"
+                            >
+                              {customer.totalVendas}
+                            </Badge>
                           </Button>
                         </TableCell>
                         <TableCell>
-                          <div className="space-y-1">
-                            {customer.produtores
-                              .slice(0, 2)
-                              .map((produtor, index) => (
-                                <div
-                                  key={index}
-                                  className="flex items-center gap-1"
-                                >
-                                  <Building2 className="h-3 w-3 text-primary" />
-                                  <span className="text-xs">{produtor}</span>
-                                </div>
-                              ))}
-                            {customer.produtores.length > 2 && (
-                              <div className="flex items-center gap-1">
-                                <Building2 className="h-3 w-3 text-muted-foreground" />
-                                <span className="text-xs text-muted-foreground">
-                                  +{customer.produtores.length - 2} mais
-                                </span>
-                              </div>
-                            )}
-                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() =>
+                              navigate(`/clientes/${customer.id}/produtores`)
+                            }
+                            className="h-8 px-2"
+                          >
+                            <Badge
+                              variant="outline"
+                              className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors"
+                            >
+                              {customer.produtores.length}
+                            </Badge>
+                          </Button>
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
-                            <Dialog>
+                            <Dialog
+                              open={openEditingCustomer}
+                              onOpenChange={setOpenEditingCustomer}
+                            >
                               <DialogTrigger asChild>
                                 <Button
                                   variant="ghost"
@@ -464,7 +461,10 @@ export default function Customers() {
                                     <div className="flex justify-end gap-2 pt-4">
                                       <Button
                                         variant="outline"
-                                        onClick={() => setEditingCustomer(null)}
+                                        onClick={() => {
+                                          setEditingCustomer(null);
+                                          setOpenEditingCustomer(false);
+                                        }}
                                       >
                                         Cancelar
                                       </Button>
