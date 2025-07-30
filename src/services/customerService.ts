@@ -4,6 +4,7 @@ export interface Customer {
   id: string;
   nome: string;
   email: string;
+  senha: string;
   cpf: string;
   telefone: string;
   ingressos: number;
