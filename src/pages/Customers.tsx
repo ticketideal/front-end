@@ -433,20 +433,6 @@ export default function Customers() {
                                       />
                                     </div>
                                     <div>
-                                      <Label htmlFor="senha">Senha (caso não queira alterar, deixe em branco)</Label>
-                                      <Input
-                                        id="senha"
-                                        value={editingCustomer.senha}
-                                        type="password"
-                                        onChange={(e) =>
-                                          setEditingCustomer({
-                                            ...editingCustomer,
-                                            senha: e.target.value,
-                                          })
-                                        }
-                                      />
-                                    </div>
-                                    <div>
                                       <Label htmlFor="telefone">Telefone</Label>
                                       <Input
                                         id="telefone"
@@ -455,6 +441,23 @@ export default function Customers() {
                                           setEditingCustomer({
                                             ...editingCustomer,
                                             telefone: e.target.value,
+                                          })
+                                        }
+                                      />
+                                    </div>
+                                    <div>
+                                      <Label htmlFor="senha">
+                                        Senha (caso não queira alterar, deixe em
+                                        branco)
+                                      </Label>
+                                      <Input
+                                        id="senha"
+                                        value={editingCustomer.senha}
+                                        type="password"
+                                        onChange={(e) =>
+                                          setEditingCustomer({
+                                            ...editingCustomer,
+                                            senha: e.target.value,
                                           })
                                         }
                                       />
