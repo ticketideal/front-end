@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Search, Download, Eye, Edit, Trash2, ShoppingCart, Tag, DollarSign, Ticket, Calendar, TrendingUp, CheckCircle, XCircle, Plus, Upload, Clock, MapPin, Users, X, GraduationCap, ExternalLink, Filter, Check, ChevronsUpDown } from "lucide-react";
+import { Search, Download, Eye, Edit, Trash2, ShoppingCart, Tag, DollarSign, Ticket, Calendar, TrendingUp, CheckCircle, XCircle, Plus, Upload, Clock, MapPin, Users, X, GraduationCap, ExternalLink, Filter, Check, ChevronsUpDown, Archive, ArchiveRestore } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -30,6 +30,9 @@ import { Switch } from "@/components/ui/switch";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { RichTextEditor } from "@/components/RichTextEditor";
+import { useEvents } from "@/hooks/useEvents";
+import { CreateEventData } from "@/services/eventService";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
 // Mock data para produtores cadastrados
 const mockProdutores = [
@@ -96,115 +99,19 @@ const formasPagamento = [
   "PIX e Cartão"
 ];
 
-// Mock data
-const mockEvents = [
-  {
-    id: 1,
-    status: "Vendas Abertas",
-    produtor: "Rock Productions",
-    tipoEvento: "Festas e Shows",
-    nomeEvento: "Rock in Rio 2024",
-    formaPagamento: "PIX e Cartão",
-    cobrarTaxa: true,
-    taxaTicketIdeal: "5%",
-    taxaBancaria: true,
-    nomearIngressos: true,
-    classificacao: "18 anos",
-    pixelFacebook: "123456789",
-    arteEvento: "https://images.unsplash.com/photo-1605810230434-7631ac76ec81?w=300&h=300&fit=crop",
-    descricao: "O maior festival de rock do Brasil",
-    certificadoCurso: false,
-    quantidadeSessoes: 3,
-    urlEvento: "https://ticketideal.com/rock-in-rio-2024"
-  },
-  {
-    id: 2,
-    status: "Aguardando Revisão",
-    produtor: "Music Events BR",
-    tipoEvento: "Cursos e Workshops",
-    nomeEvento: "Curso de Produção Musical",
-    formaPagamento: "PIX e Cartão",
-    cobrarTaxa: false,
-    taxaTicketIdeal: "0%",
-    taxaBancaria: false,
-    nomearIngressos: true,
-    classificacao: "Livre",
-    pixelFacebook: "987654321",
-    arteEvento: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=300&h=300&fit=crop",
-    descricao: "Aprenda produção musical do zero",
-    certificadoCurso: true,
-    quantidadeSessoes: 8,
-    urlEvento: "https://ticketideal.com/curso-producao-musical"
-  },
-  {
-    id: 3,
-    status: "ESGOTADO",
-    produtor: "Festival Organizer",
-    tipoEvento: "Festas e Shows",
-    nomeEvento: "Festival de Verão 2025",
-    formaPagamento: "PIX",
-    cobrarTaxa: true,
-    taxaTicketIdeal: "3%",
-    taxaBancaria: true,
-    nomearIngressos: false,
-    classificacao: "16 anos",
-    pixelFacebook: "456789123",
-    arteEvento: "https://images.unsplash.com/photo-1470813740244-df37b8c1edcb?w=300&h=300&fit=crop",
-    descricao: "Festival de música eletrônica",
-    certificadoCurso: false,
-    quantidadeSessoes: 2,
-    urlEvento: "https://ticketideal.com/festival-verao-2025"
-  },
-  {
-    id: 4,
-    status: "Privado",
-    produtor: "Entertainment Co",
-    tipoEvento: "Teatros e Espetáculos",
-    nomeEvento: "Peça Teatral Especial",
-    formaPagamento: "PIX",
-    cobrarTaxa: false,
-    taxaTicketIdeal: "0%",
-    taxaBancaria: false,
-    nomearIngressos: true,
-    classificacao: "Livre",
-    pixelFacebook: "789123456",
-    arteEvento: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=300&fit=crop",
-    descricao: "Evento privado exclusivo",
-    certificadoCurso: false,
-    quantidadeSessoes: 1,
-    urlEvento: "https://ticketideal.com/peca-teatral-especial"
-  },
-  {
-    id: 5,
-    status: "Em Breve",
-    produtor: "Live Shows Inc",
-    tipoEvento: "Congressos e Palestras",
-    nomeEvento: "Congresso de Tecnologia 2025",
-    formaPagamento: "PIX e Cartão",
-    cobrarTaxa: true,
-    taxaTicketIdeal: "4%",
-    taxaBancaria: true,
-    nomearIngressos: true,
-    classificacao: "Livre",
-    pixelFacebook: "321654987",
-    arteEvento: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=300&h=300&fit=crop",
-    descricao: "O maior evento de tecnologia do país",
-    certificadoCurso: false,
-    quantidadeSessoes: 5,
-    urlEvento: "https://ticketideal.com/congresso-tecnologia-2025"
-  }
-];
-
 export default function Events() {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [showArchived, setShowArchived] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [exportDialogOpen, setExportDialogOpen] = useState(false);
-  const [createEventDialogOpen, setCreateEventDialogOpen] = useState(false);
+  const [eventDialogOpen, setEventDialogOpen] = useState(false);
   const [createSessionsDialogOpen, setCreateSessionsDialogOpen] = useState(false);
   const [editingStatusId, setEditingStatusId] = useState<number | null>(null);
   const [editingImageId, setEditingImageId] = useState<number | null>(null);
+  const [editingEvent, setEditingEvent] = useState<any>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize] = useState(10);
   const editImageRefs = useRef<{ [key: number]: HTMLInputElement | null }>({});
   const [eventImage, setEventImage] = useState<string | null>(null);
   const [currentEventType, setCurrentEventType] = useState("");
@@ -227,8 +134,25 @@ export default function Events() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const teacherImageRefs = useRef<{ [key: number]: HTMLInputElement | null }>({});
   
+  // Hook para gerenciar eventos com API
+  const {
+    data: eventsData,
+    isLoading,
+    createEvent,
+    updateEvent,
+    deleteEvent,
+    updateStatus,
+    isCreating,
+    isUpdating,
+    isDeleting,
+    isUpdatingStatus
+  } = useEvents(currentPage, pageSize, {
+    search: searchTerm,
+    showArchived
+  });
+
   // Estado para salvar dados do evento
-  const [eventFormData, setEventFormData] = useState({
+  const [eventFormData, setEventFormData] = useState<CreateEventData>({
     nomeEvento: "",
     produtor: "",
     tipoEvento: "",
@@ -260,22 +184,21 @@ export default function Events() {
     certificadoCurso: true
   });
 
-  const filteredEvents = mockEvents.filter(event => {
-    // Filtro por texto de busca
-    const matchesSearch = event.nomeEvento.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         event.produtor.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    // Filtro por status arquivado
-    const matchesArchiveFilter = showArchived ? true : event.status !== "Arquivado";
-    
-    return matchesSearch && matchesArchiveFilter;
+  // Usar dados da API ou fallback para dados mock durante desenvolvimento
+  const events = eventsData?.data;
+  const totalEvents = eventsData?.total;
+
+  const filteredEvents = events?.filter(event => {
+    // Filtro por texto de busca (apenas para fallback dos dados mock)
+    return event.nomeEvento.toLowerCase().includes(searchTerm.toLowerCase()) ||
+           event.produtor.toLowerCase().includes(searchTerm.toLowerCase());
   });
 
   // Gerar sugestões de busca únicas (só se tiver pelo menos 2 caracteres)
   const searchSuggestions = searchTerm.length > 1 ? Array.from(new Set([
-    ...mockEvents.map(event => event.nomeEvento),
-    ...mockEvents.map(event => event.produtor),
-    ...mockEvents.map(event => event.tipoEvento)
+    ...events.map(event => event.nomeEvento),
+    ...events.map(event => event.produtor),
+    ...events.map(event => event.tipoEvento)
   ])).filter(item => 
     item.toLowerCase().includes(searchTerm.toLowerCase()) && 
     item.toLowerCase() !== searchTerm.toLowerCase()
@@ -451,17 +374,83 @@ export default function Events() {
     navigate(`/eventos/${eventId}/sessoes`);
   };
 
-  const handleCreateEvent = () => {
-    // Aqui seria feita a lógica de criação do evento
-    console.log("Evento criado!");
-    setCreateEventDialogOpen(false);
-    // Abrir dialog de sessões
-    setCreateSessionsDialogOpen(true);
+  const handleSaveEvent = () => {
+    if (editingEvent) {
+      // Atualizar evento existente
+      updateEvent({ id: editingEvent.id, data: { ...eventFormData, arteEvento: eventImage || undefined } });
+    } else {
+      // Criar novo evento
+      createEvent({ ...eventFormData, arteEvento: eventImage || undefined });
+    }
+    handleCloseEventDialog();
+  };
+
+  const handleOpenCreateEvent = () => {
+    setEditingEvent(null);
+    setEventFormData({
+      nomeEvento: "",
+      produtor: "",
+      tipoEvento: "",
+      classificacao: "",
+      formaPagamento: "",
+      taxaTicketIdeal: "",
+      pixelFacebook: "",
+      descricao: "",
+      cobrarTaxa: false,
+      taxaBancaria: false,
+      nomearIngressos: false,
+      certificadoCurso: false
+    });
+    setEventImage(null);
+    setEventDialogOpen(true);
+  };
+
+  const handleOpenEditEvent = (event: any) => {
+    setEditingEvent(event);
+    setEventFormData({
+      nomeEvento: event.nomeEvento || "",
+      produtor: event.produtor || "",
+      tipoEvento: event.tipoEvento || "",
+      classificacao: event.classificacao || "",
+      formaPagamento: event.formaPagamento || "",
+      taxaTicketIdeal: event.taxaTicketIdeal || "",
+      pixelFacebook: event.pixelFacebook || "",
+      descricao: event.descricao || "",
+      cobrarTaxa: event.cobrarTaxa || false,
+      taxaBancaria: event.taxaBancaria || false,
+      nomearIngressos: event.nomearIngressos || false,
+      certificadoCurso: event.certificadoCurso || false
+    });
+    setEventImage(event.arteEvento || null);
+    setEventDialogOpen(true);
+  };
+
+  const handleCloseEventDialog = () => {
+    setEventDialogOpen(false);
+    setEditingEvent(null);
+    setEventFormData({
+      nomeEvento: "",
+      produtor: "",
+      tipoEvento: "",
+      classificacao: "",
+      formaPagamento: "",
+      taxaTicketIdeal: "",
+      pixelFacebook: "",
+      descricao: "",
+      cobrarTaxa: false,
+      taxaBancaria: false,
+      nomearIngressos: false,
+      certificadoCurso: false
+    });
+    setEventImage(null);
+  };
+
+  const handleDeleteEvent = (eventId: number) => {
+    deleteEvent(eventId);
   };
 
   const handleStatusChange = (eventId: number, newStatus: string) => {
-    console.log(`Alterando status do evento ${eventId} para: ${newStatus}`);
-    // Aqui você implementaria a lógica para salvar no backend
+    updateStatus({ id: eventId, status: newStatus });
     setEditingStatusId(null);
   };
 
@@ -590,16 +579,16 @@ export default function Events() {
           <h1 className="text-3xl font-bold text-foreground">Eventos</h1>
           <p className="text-muted-foreground">Gerencie todos os eventos da plataforma</p>
         </div>
-        <Dialog open={createEventDialogOpen} onOpenChange={setCreateEventDialogOpen}>
+        <Dialog open={eventDialogOpen} onOpenChange={setEventDialogOpen}>
           <DialogTrigger asChild>
-            <Button>
+            <Button onClick={handleOpenCreateEvent}>
               <Plus className="w-4 h-4 mr-2" />
               Cadastrar Evento
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Cadastrar Novo Evento</DialogTitle>
+              <DialogTitle>{editingEvent ? 'Editar Evento' : 'Cadastrar Novo Evento'}</DialogTitle>
             </DialogHeader>
             <div className="grid grid-cols-2 gap-4 py-4">
               <div className="space-y-2">
@@ -797,11 +786,11 @@ export default function Events() {
               </div>
             </div>
             <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setCreateEventDialogOpen(false)}>
+              <Button variant="outline" onClick={handleCloseEventDialog}>
                 Cancelar
               </Button>
-              <Button onClick={handleCreateEvent}>
-                Próximo: Configurar Sessões
+              <Button onClick={handleSaveEvent} disabled={isCreating || isUpdating}>
+                {isCreating || isUpdating ? "Salvando..." : (editingEvent ? "Salvar Alterações" : "Criar Evento")}
               </Button>
             </div>
           </DialogContent>
@@ -1076,7 +1065,7 @@ export default function Events() {
                 variant="outline" 
                 onClick={() => {
                   setCreateSessionsDialogOpen(false);
-                  setCreateEventDialogOpen(true);
+                  setCreateSessionsDialogOpen(true);
                 }}
               >
                 Voltar para Evento
@@ -1175,13 +1164,13 @@ export default function Events() {
                             >
                               <Search className="mr-2 h-4 w-4" />
                               <span className="flex-1">{suggestion}</span>
-                              {mockEvents.some(e => e.nomeEvento === suggestion) && (
+                              {events?.some(e => e.nomeEvento === suggestion) && (
                                 <span className="text-xs text-muted-foreground">Evento</span>
                               )}
-                              {mockEvents.some(e => e.produtor === suggestion) && (
+                              {events?.some(e => e.produtor === suggestion) && (
                                 <span className="text-xs text-muted-foreground">Produtor</span>
                               )}
-                              {mockEvents.some(e => e.tipoEvento === suggestion) && (
+                              {events?.some(e => e.tipoEvento === suggestion) && (
                                 <span className="text-xs text-muted-foreground">Tipo</span>
                               )}
                             </CommandItem>
@@ -1194,18 +1183,25 @@ export default function Events() {
               </Popover>
             </div>
             
-            <div className="flex items-center gap-4 px-4 py-2 border border-border rounded-lg bg-muted/30">
-              <Filter className="w-4 h-4 text-muted-foreground" />
-              <div className="flex items-center space-x-2">
-                <Switch
-                  id="show-archived"
-                  checked={showArchived}
-                  onCheckedChange={setShowArchived}
-                />
-                <Label htmlFor="show-archived" className="text-sm font-medium">
-                  Mostrar Arquivados
-                </Label>
-              </div>
+            <div className="flex items-center space-x-2 border rounded-lg px-3 py-2">
+              <Switch
+                id="show-archived"
+                checked={showArchived}
+                onCheckedChange={setShowArchived}
+              />
+              <Label htmlFor="show-archived" className="text-sm cursor-pointer">
+                {showArchived ? (
+                  <>
+                    <ArchiveRestore className="w-4 h-4 inline mr-1" />
+                    Incluindo arquivados
+                  </>
+                ) : (
+                  <>
+                    <Archive className="w-4 h-4 inline mr-1" />
+                    Mostrar arquivados
+                  </>
+                )}
+              </Label>
             </div>
             
             <Dialog open={exportDialogOpen} onOpenChange={setExportDialogOpen}>
@@ -1269,7 +1265,7 @@ export default function Events() {
       <Card>
         <CardHeader>
           <CardTitle>
-            Eventos ({filteredEvents.length})
+            Eventos ({filteredEvents?.length})
             {!showArchived && (
               <span className="text-sm font-normal text-muted-foreground ml-2">
                 (excluindo arquivados)
@@ -1294,7 +1290,7 @@ export default function Events() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredEvents.map((event) => (
+              {filteredEvents?.map((event) => (
                 <TableRow key={event.id}>
                   <TableCell>
                     {editingImageId === event.id ? (
@@ -1618,12 +1614,45 @@ export default function Events() {
                           </Tabs>
                         </DialogContent>
                       </Dialog>
-                      <Button variant="ghost" size="sm">
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => handleOpenEditEvent(event)}
+                        disabled={isUpdating}
+                      >
                         <Edit className="w-4 h-4" />
                       </Button>
-                      <Button variant="ghost" size="sm" className="text-destructive">
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
+                      
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="text-destructive"
+                            disabled={isDeleting}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Tem certeza que deseja excluir o evento "{event.nomeEvento}"? 
+                              Esta ação não pode ser desfeita.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => handleDeleteEvent(event.id)}
+                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            >
+                              {isDeleting ? "Excluindo..." : "Excluir"}
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </div>
                   </TableCell>
                 </TableRow>
