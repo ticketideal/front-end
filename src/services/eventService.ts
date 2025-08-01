@@ -52,6 +52,27 @@ export interface CreateEventData {
   arteEvento?: string;
 }
 
+// Interface para a resposta da sua API
+interface ApiResponse {
+  current_page: number;
+  data: Event[];
+  last_page: number;
+  per_page: number;
+  total: number;
+  from: number;
+  to: number;
+  links: Array<{
+    url: string | null;
+    label: string;
+    active: boolean;
+  }>;
+  first_page_url: string;
+  last_page_url: string;
+  next_page_url: string | null;
+  prev_page_url: string | null;
+  path: string;
+}
+
 class EventService {
   private baseUrl = '/eventos'; // Substitua pela URL da sua API
 
@@ -63,7 +84,7 @@ class EventService {
     try {
       const params = new URLSearchParams({
         page: page.toString(),
-        limit: limit.toString(),
+        per_page: limit.toString(),
         ...Object.fromEntries(
           Object.entries(filters).filter(([_, value]) => value !== undefined && value !== '')
         )
@@ -75,7 +96,16 @@ class EventService {
         throw new Error(`Erro ao buscar eventos: ${response.statusText}`);
       }
 
-      return await response.data;
+      const apiResponse: ApiResponse = await response.data;
+
+      // Mapear a resposta da API para o formato esperado pelo frontend
+      return {
+        data: apiResponse.data,
+        total: apiResponse.total,
+        page: apiResponse.current_page,
+        limit: apiResponse.per_page,
+        totalPages: apiResponse.last_page,
+      };
     } catch (error) {
       console.error('Erro ao buscar eventos:', error);
       throw error;
@@ -181,6 +211,26 @@ class EventService {
 
   async unarchiveEvent(id: number, newStatus: string = 'Aguardando Revisão'): Promise<Event> {
     return this.updateEventStatus(id, newStatus);
+  }
+
+  async searchEvents(query: string, limit: number = 8): Promise<Event[]> {
+    try {
+      const params = new URLSearchParams({
+        search: query,
+        limit: limit.toString(),
+      });
+
+      const response = await api.get(`${this.baseUrl}/search?${params}`);
+      
+      if (!response.data) {
+        throw new Error(`Erro ao buscar eventos: ${response.statusText}`);
+      }
+
+      return await response.data;
+    } catch (error) {
+      console.error('Erro ao buscar eventos:', error);
+      throw error;
+    }
   }
 }
 

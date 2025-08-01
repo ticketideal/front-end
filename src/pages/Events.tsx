@@ -30,9 +30,10 @@ import { Switch } from "@/components/ui/switch";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { RichTextEditor } from "@/components/RichTextEditor";
-import { useEvents } from "@/hooks/useEvents";
+import { useEvents, useEventSearch } from "@/hooks/useEvents";
 import { CreateEventData } from "@/services/eventService";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 
 // Mock data para produtores cadastrados
 const mockProdutores = [
@@ -151,6 +152,9 @@ export default function Events() {
     showArchived
   });
 
+  // Hook para busca de eventos no autocomplete
+  const { data: searchResults = [], isLoading: isSearching } = useEventSearch(searchTerm);
+
   // Estado para salvar dados do evento
   const [eventFormData, setEventFormData] = useState<CreateEventData>({
     nomeEvento: "",
@@ -187,6 +191,7 @@ export default function Events() {
   // Usar dados da API ou fallback para dados mock durante desenvolvimento
   const events = eventsData?.data;
   const totalEvents = eventsData?.total;
+  const totalPages = eventsData?.totalPages || Math.ceil(totalEvents / pageSize);
 
   const filteredEvents = events?.filter(event => {
     // Filtro por texto de busca (apenas para fallback dos dados mock)
@@ -194,15 +199,7 @@ export default function Events() {
            event.produtor.toLowerCase().includes(searchTerm.toLowerCase());
   });
 
-  // Gerar sugestões de busca únicas (só se tiver pelo menos 2 caracteres)
-  const searchSuggestions = searchTerm.length > 1 ? Array.from(new Set([
-    ...events.map(event => event.nomeEvento),
-    ...events.map(event => event.produtor),
-    ...events.map(event => event.tipoEvento)
-  ])).filter(item => 
-    item.toLowerCase().includes(searchTerm.toLowerCase()) && 
-    item.toLowerCase() !== searchTerm.toLowerCase()
-  ).slice(0, 8) : []; // Limitar a 8 sugestões
+  const searchSuggestions = searchResults;
 
   const columnLabels = {
     status: "Status",
@@ -1129,6 +1126,11 @@ export default function Events() {
                         setSearchTerm(e.target.value);
                         setSearchOpen(e.target.value.length > 1); // Só abre após 2+ caracteres
                       }}
+                      onFocus={() => {
+                        if (searchTerm.length > 1) {
+                          setSearchOpen(true);
+                        }
+                      }}
                       className="pl-10 pr-10"
                     />
                     {searchTerm && (
@@ -1146,33 +1148,36 @@ export default function Events() {
                     )}
                   </div>
                 </PopoverTrigger>
-                {searchSuggestions.length > 0 && (
-                  <PopoverContent className="w-[400px] p-0" align="start">
+                 {searchSuggestions.length > 0 && (
+                  <PopoverContent 
+                    className="w-[400px] p-0" 
+                    align="start"
+                    onOpenAutoFocus={(e) => e.preventDefault()}
+                    onCloseAutoFocus={(e) => e.preventDefault()}
+                  >
                     <Command>
                       <CommandList>
                         <CommandEmpty>Nenhuma sugestão encontrada.</CommandEmpty>
                         <CommandGroup heading="Sugestões">
-                          {searchSuggestions.map((suggestion, index) => (
+                          {searchSuggestions.map((event, index) => (
+                            console.log(event),
                             <CommandItem
                               key={index}
-                              value={suggestion}
+                              value={event.nomeEvento}
                               onSelect={() => {
-                                setSearchTerm(suggestion);
+                                setSearchTerm(event.nomeEvento);
                                 setSearchOpen(false);
                               }}
                               className="cursor-pointer"
                             >
                               <Search className="mr-2 h-4 w-4" />
-                              <span className="flex-1">{suggestion}</span>
-                              {events?.some(e => e.nomeEvento === suggestion) && (
-                                <span className="text-xs text-muted-foreground">Evento</span>
-                              )}
-                              {events?.some(e => e.produtor === suggestion) && (
-                                <span className="text-xs text-muted-foreground">Produtor</span>
-                              )}
-                              {events?.some(e => e.tipoEvento === suggestion) && (
-                                <span className="text-xs text-muted-foreground">Tipo</span>
-                              )}
+                              <div className="flex-1">
+                                <div className="font-medium">{event.nomeEvento}</div>
+                                <div className="text-xs text-muted-foreground">{event.produtor} • {event.tipoEvento}</div>
+                              </div>
+                              <Badge variant="outline" className="text-xs">
+                                {event.status}
+                              </Badge>
                             </CommandItem>
                           ))}
                         </CommandGroup>
@@ -1265,7 +1270,7 @@ export default function Events() {
       <Card>
         <CardHeader>
           <CardTitle>
-            Eventos ({filteredEvents?.length})
+            Eventos ({totalEvents})
             {!showArchived && (
               <span className="text-sm font-normal text-muted-foreground ml-2">
                 (excluindo arquivados)
@@ -1660,6 +1665,103 @@ export default function Events() {
             </TableBody>
           </Table>
         </CardContent>
+        
+        {/* Componente de Paginação */}
+        {totalPages > 1 && (
+          <div className="flex justify-center py-4">
+            <Pagination>
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious 
+                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                    className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                  />
+                </PaginationItem>
+                
+                {/* Primeira página */}
+                {currentPage > 2 && (
+                  <>
+                    <PaginationItem>
+                      <PaginationLink 
+                        onClick={() => setCurrentPage(1)}
+                        isActive={currentPage === 1}
+                        className="cursor-pointer"
+                      >
+                        1
+                      </PaginationLink>
+                    </PaginationItem>
+                    {currentPage > 3 && (
+                      <PaginationItem>
+                        <PaginationEllipsis />
+                      </PaginationItem>
+                    )}
+                  </>
+                )}
+                
+                {/* Página anterior */}
+                {currentPage > 1 && (
+                  <PaginationItem>
+                    <PaginationLink 
+                      onClick={() => setCurrentPage(currentPage - 1)}
+                      className="cursor-pointer"
+                    >
+                      {currentPage - 1}
+                    </PaginationLink>
+                  </PaginationItem>
+                )}
+                
+                {/* Página atual */}
+                <PaginationItem>
+                  <PaginationLink 
+                    isActive={true}
+                    className="cursor-pointer"
+                  >
+                    {currentPage}
+                  </PaginationLink>
+                </PaginationItem>
+                
+                {/* Próxima página */}
+                {currentPage < totalPages && (
+                  <PaginationItem>
+                    <PaginationLink 
+                      onClick={() => setCurrentPage(currentPage + 1)}
+                      className="cursor-pointer"
+                    >
+                      {currentPage + 1}
+                    </PaginationLink>
+                  </PaginationItem>
+                )}
+                
+                {/* Última página */}
+                {currentPage < totalPages - 1 && (
+                  <>
+                    {currentPage < totalPages - 2 && (
+                      <PaginationItem>
+                        <PaginationEllipsis />
+                      </PaginationItem>
+                    )}
+                    <PaginationItem>
+                      <PaginationLink 
+                        onClick={() => setCurrentPage(totalPages)}
+                        isActive={currentPage === totalPages}
+                        className="cursor-pointer"
+                      >
+                        {totalPages}
+                      </PaginationLink>
+                    </PaginationItem>
+                  </>
+                )}
+                
+                <PaginationItem>
+                  <PaginationNext 
+                    onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                    className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          </div>
+        )}
       </Card>
     </div>
   );

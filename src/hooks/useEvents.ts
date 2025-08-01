@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { eventService, EventFilters, CreateEventData } from '@/services/eventService';
@@ -6,12 +7,11 @@ import { toast } from '@/hooks/use-toast';
 export const useEvents = (page: number = 1, limit: number = 10, filters: EventFilters = {}) => {
   const queryClient = useQueryClient();
 
-  // Desabilitar chamadas à API por enquanto (API não implementada)
   const query = useQuery({
     queryKey: ['events', page, limit, filters],
     queryFn: () => eventService.getEvents(page, limit, filters),
     placeholderData: (previousData) => previousData,
-    enabled: true, // Desabilita a chamada automática à API
+    enabled: true, // Habilitar as chamadas à API
   });
 
   const createEventMutation = useMutation({
@@ -106,5 +106,14 @@ export const useEvent = (id: number) => {
     queryKey: ['event', id],
     queryFn: () => eventService.getEvent(id),
     enabled: !!id,
+  });
+};
+
+export const useEventSearch = (query: string, limit: number = 8) => {
+  return useQuery({
+    queryKey: ['event-search', query, limit],
+    queryFn: () => eventService.searchEvents(query, limit),
+    enabled: query.length > 1, // Só executa com 2+ caracteres
+    staleTime: 1000 * 60 * 5, // Cache por 5 minutos
   });
 };
